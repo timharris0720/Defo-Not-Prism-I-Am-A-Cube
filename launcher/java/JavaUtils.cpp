@@ -151,6 +151,25 @@ JavaInstallPtr JavaUtils::GetDefaultJava()
     return javaVersion;
 }
 
+QMap < QString, QString> JavaUtils::GetVersionToJavaVesion()
+{
+#ifdef Q_OS_WIN64
+    QMap<QString, QString> data_windows;
+    data_windows["< 1.16.x -> Java 8"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=8";
+    data_windows["1.17 -> 1.17.1 Java 16"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=16";
+    data_windows["1.18.x -> 1.20.x Java 17"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=17";
+    data_windows["1.21.x > Java 21"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=21";
+    return data_windows;
+#elif Q_OS_LINUX
+    QMap<QString, QString> data_linux;
+    data_windows["< 1.16.x -> Java 8"] = "https://adoptium.net/temurin/releases/?os=linux&arch=x64&package=jre&version=8";
+    data_windows["1.17 -> 1.17.1 Java 16"] = "https://adoptium.net/temurin/releases/?os=linux&arch=x64&package=jre&version=16";
+    data_windows["1.18.x -> 1.20.x Java 17"] = "https://adoptium.net/temurin/releases/?os=linux&arch=x64&package=jre&version=17";
+    data_windows["1.21.x > Java 21"] = "https://adoptium.net/temurin/releases/?os=linux&arch=x64&package=jre&version=21";
+    return data_linux;
+#endif
+}
+
 QStringList addJavasFromEnv(QList<QString> javas)
 {
     auto env = qEnvironmentVariable("PRISMLAUNCHER_JAVA_PATHS");  // FIXME: use launcher name from buildconfig

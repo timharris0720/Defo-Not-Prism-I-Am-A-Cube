@@ -108,6 +108,7 @@ class MinecraftInstance : public BaseInstance {
 
     //////  Profile management //////
     std::shared_ptr<PackProfile> getPackProfile() const;
+    QString getMinecraftVersion() const;
 
     //////  Mod Lists  //////
     std::shared_ptr<ModFolderModel> loaderModList();
@@ -158,6 +159,7 @@ class MinecraftInstance : public BaseInstance {
     virtual QStringList processMinecraftArgs(AuthSessionPtr account, MinecraftServerTargetPtr serverToJoin) const;
 
     virtual JavaVersion getJavaVersion();
+    
 
    protected:
     QMap<QString, QString> createCensorFilterFromSession(AuthSessionPtr session);

@@ -51,12 +51,6 @@
          <property name="title">
           <string>Java insta&amp;llation</string>
          </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="4" column="0">
            <widget class="QCheckBox" name="skipCompatibilityCheckbox">
@@ -88,6 +82,13 @@
              <widget class="QPushButton" name="javaDetectBtn">
               <property name="text">
                <string>Auto-detect...</string>
+              </property>
+             </widget>
+            </item>
+			<item>
+             <widget class="QPushButton" name="javaDownloadBtn">
+              <property name="text">
+               <string>Download Java</string>
               </property>
              </widget>
             </item>

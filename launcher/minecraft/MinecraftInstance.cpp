@@ -230,6 +230,10 @@ std::shared_ptr<PackProfile> MinecraftInstance::getPackProfile() const
 {
     return m_components;
 }
+QString MinecraftInstance::getMinecraftVersion() const
+{
+    return m_components->getProfile()->getMinecraftVersion();
+}
 
 QSet<QString> MinecraftInstance::traits() const
 {

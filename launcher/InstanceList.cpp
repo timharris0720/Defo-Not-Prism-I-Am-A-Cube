@@ -620,6 +620,14 @@ void InstanceList::propertiesChanged(BaseInstance* inst)
         updateTotalPlayTime();
     }
 }
+QString InstanceList::GetInstanceDirectory()
+{
+    return m_instDir;
+}
+SettingsObjectPtr InstanceList::GetGlobalSettings()
+{
+    return m_globalSettings;
+}
 
 InstancePtr InstanceList::loadInstance(const InstanceId& id)
 {

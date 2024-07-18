@@ -152,7 +152,9 @@ class InstanceList : public QAbstractListModel {
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
     QStringList getLinkedInstancesById(const QString& id) const;
-
+    InstancePtr loadInstance(const InstanceId& id);
+    QString GetInstanceDirectory();
+    SettingsObjectPtr GetGlobalSettings();
    signals:
     void dataIsInvalid();
     void instancesChanged();
@@ -177,7 +179,7 @@ class InstanceList : public QAbstractListModel {
     void loadGroupList();
     void saveGroupList();
     QList<InstanceId> discoverInstances();
-    InstancePtr loadInstance(const InstanceId& id);
+    
 
     void increaseGroupCount(const QString& group);
     void decreaseGroupCount(const QString& group);
@@ -189,9 +191,9 @@ class InstanceList : public QAbstractListModel {
     QList<InstancePtr> m_instances;
     // id -> refs
     QMap<QString, int> m_groupNameCache;
-
-    SettingsObjectPtr m_globalSettings;
     QString m_instDir;
+    SettingsObjectPtr m_globalSettings;
+    
     QFileSystemWatcher* m_watcher;
     // FIXME: this is so inefficient that looking at it is almost painful.
     QSet<QString> m_collapsedGroups;

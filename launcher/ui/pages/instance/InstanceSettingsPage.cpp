@@ -45,14 +45,19 @@
 #include <sys.h>
 
 #include "ui/dialogs/VersionSelectDialog.h"
+#include "ui/dialogs/JavaDownloadDialog.h"
 #include "ui/widgets/CustomCommands.h"
 
 #include "Application.h"
 #include "BuildConfig.h"
 #include "JavaCommon.h"
 #include "minecraft/auth/AccountList.h"
-
 #include "FileSystem.h"
+#include "InstanceList.h"
+#include "minecraft/MinecraftInstance.h"
+#include "minecraft/LaunchProfile.h"
+#include "settings/INISettingsObject.h"
+
 #include "java/JavaInstallList.h"
 #include "java/JavaUtils.h"
 
@@ -97,6 +102,7 @@ void InstanceSettingsPage::globalSettingsButtonClicked(bool)
             APPLICATION->ShowGlobalSettings(this, "minecraft-settings");
             return;
     }
+    
 }
 
 bool InstanceSettingsPage::apply()
@@ -167,15 +173,9 @@ void InstanceSettingsPage::applySettings()
     }
 
     // Java Install Settings
-    bool javaInstall = ui->javaSettingsGroupBox->isChecked();
-    m_settings->set("OverrideJavaLocation", javaInstall);
-    if (javaInstall) {
-        m_settings->set("JavaPath", ui->javaPathTextBox->text());
-        m_settings->set("IgnoreJavaCompatibility", ui->skipCompatibilityCheckbox->isChecked());
-    } else {
-        m_settings->reset("JavaPath");
-        m_settings->reset("IgnoreJavaCompatibility");
-    }
+    m_settings->set("OverrideJavaLocation", true);
+    m_settings->set("JavaPath", ui->javaPathTextBox->text());
+    m_settings->set("IgnoreJavaCompatibility", ui->skipCompatibilityCheckbox->isChecked());
 
     // Java arguments
     bool javaArgs = ui->javaArgumentsGroupBox->isChecked();
@@ -317,7 +317,7 @@ void InstanceSettingsPage::loadSettings()
     ui->labelPermgenNote->setVisible(permGenVisible);
 
     // Java Settings
-    bool overrideJava = m_settings->get("OverrideJava").toBool();
+    bool overrideJava = true;
     bool overrideLocation = m_settings->get("OverrideJavaLocation").toBool() || overrideJava;
     bool overrideArgs = m_settings->get("OverrideJavaArgs").toBool() || overrideJava;
 
@@ -412,6 +412,43 @@ void InstanceSettingsPage::on_javaDetectBtn_clicked()
     }
 }
 
+void InstanceSettingsPage::on_javaDownloadBtn_clicked()
+{
+    if (JavaUtils::getJavaCheckPath().isEmpty()) {
+        JavaCommon::javaCheckNotFound(this);
+        return;
+    }
+
+    JavaInstallPtr java;
+    QString instanceID = APPLICATION->m_instanceIdToLaunch;
+    auto instanceRoot = FS::PathCombine(APPLICATION->instances()->GetInstanceDirectory(), instanceID);
+    auto instanceSettings = std::make_shared<INISettingsObject>(FS::PathCombine(instanceRoot, "instance.cfg"));
+    InstancePtr inst;
+
+    instanceSettings->registerSetting("InstanceType", "");
+
+    QString inst_type = instanceSettings->get("InstanceType").toString();
+    ////profile->getMinecraftVersion()
+    auto mcInst = new MinecraftInstance(APPLICATION->instances()->GetGlobalSettings(), instanceSettings, instanceRoot);
+    auto mcVersion = mcInst->getMinecraftVersion();
+    
+    JavaDownloadDialog vselect(APPLICATION->javalist().get(), tr("Select a Java version"), this, true);
+    vselect.setResizeOn(2);
+    vselect.exec();
+    
+    if (vselect.result() == QDialog::Accepted && vselect.selectedVersion()) {
+        java = std::dynamic_pointer_cast<JavaInstall>(vselect.selectedVersion());
+        //ui->javaPathTextBox->setText(java->path);
+        bool visible = java->id.requiresPermGen() && m_settings->get("OverrideMemory").toBool();
+        ui->permGenSpinBox->setVisible(visible);
+        ui->labelPermGen->setVisible(visible);
+        ui->labelPermgenNote->setVisible(visible);
+        ui->javaSettingsGroupBox->setTitle(mcVersion);
+        m_settings->set("PermGenVisible", visible);
+    } 
+    
+}
+
 void InstanceSettingsPage::on_javaBrowseBtn_clicked()
 {
     QString raw_path = QFileDialog::getOpenFileName(this, tr("Find Java executable"));
@@ -460,6 +497,7 @@ void InstanceSettingsPage::updateAccountsMenu()
 {
     ui->instanceAccountSelector->clear();
     auto accounts = APPLICATION->accounts();
+    
     int accountIndex = accounts->findAccountByProfileId(m_settings->get("InstanceAccountId").toString());
 
     for (int i = 0; i < accounts->count(); i++) {

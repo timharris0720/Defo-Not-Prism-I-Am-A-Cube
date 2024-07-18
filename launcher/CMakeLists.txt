@@ -1019,6 +1019,8 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/ReviewMessageBox.h
     ui/dialogs/VersionSelectDialog.cpp
     ui/dialogs/VersionSelectDialog.h
+    ui/dialogs/JavaDownloadDialog.h
+    ui/dialogs/JavaDownloadDialog.cpp
     ui/dialogs/ResourceDownloadDialog.cpp
     ui/dialogs/ResourceDownloadDialog.h
     ui/dialogs/ScrollMessageBox.cpp
