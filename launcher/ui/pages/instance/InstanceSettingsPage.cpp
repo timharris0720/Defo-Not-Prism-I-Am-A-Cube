@@ -437,14 +437,7 @@ void InstanceSettingsPage::on_javaDownloadBtn_clicked()
     vselect.exec();
     
     if (vselect.result() == QDialog::Accepted && vselect.selectedVersion()) {
-        java = std::dynamic_pointer_cast<JavaInstall>(vselect.selectedVersion());
-        //ui->javaPathTextBox->setText(java->path);
-        bool visible = java->id.requiresPermGen() && m_settings->get("OverrideMemory").toBool();
-        ui->permGenSpinBox->setVisible(visible);
-        ui->labelPermGen->setVisible(visible);
-        ui->labelPermgenNote->setVisible(visible);
-        ui->javaSettingsGroupBox->setTitle(mcVersion);
-        m_settings->set("PermGenVisible", visible);
+        
     } 
     
 }
