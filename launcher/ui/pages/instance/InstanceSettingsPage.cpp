@@ -60,6 +60,7 @@
 
 #include "java/JavaInstallList.h"
 #include "java/JavaUtils.h"
+#include "java/MinecraftJavaVersion.h"
 
 InstanceSettingsPage::InstanceSettingsPage(BaseInstance* inst, QWidget* parent)
     : QWidget(parent), ui(new Ui::InstanceSettingsPage), m_instance(inst)
@@ -431,15 +432,10 @@ void InstanceSettingsPage::on_javaDownloadBtn_clicked()
     ////profile->getMinecraftVersion()
     auto mcInst = new MinecraftInstance(APPLICATION->instances()->GetGlobalSettings(), instanceSettings, instanceRoot);
     auto mcVersion = mcInst->getMinecraftVersion();
-    
-    JavaDownloadDialog vselect(APPLICATION->javalist().get(), tr("Select a Java version"), this, true);
-    vselect.setResizeOn(2);
-    vselect.exec();
-    
-    if (vselect.result() == QDialog::Accepted && vselect.selectedVersion()) {
-        
-    } 
-    
+    MinecraftVersion_Java version(mcVersion);
+    QString versionRequired = version.GetJavaVersionString();
+    JavaDownloadDialog downloadDialog(versionRequired, version.GetJavaVersionURL(versionRequired), tr("Download Java Version"), this, true);
+    downloadDialog.exec();
 }
 
 void InstanceSettingsPage::on_javaBrowseBtn_clicked()

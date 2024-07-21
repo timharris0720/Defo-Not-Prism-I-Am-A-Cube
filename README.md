@@ -1,4 +1,5 @@
-DEFO NOT PRISM I AM CUBEEE
+# DEFO NOT PRISM I AM CUBEEE
+this fork adds the ability to download the required java version for modpacks (currently windows only)
 ## Installation
 
 <a href="https://repology.org/project/prismlauncher/versions">

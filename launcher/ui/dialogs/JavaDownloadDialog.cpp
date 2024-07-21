@@ -47,114 +47,60 @@
 #include "BaseVersion.h"
 #include "BaseVersionList.h"
 
-JavaDownloadDialog::JavaDownloadDialog(BaseVersionList* vlist, QString title, QWidget* parent, bool cancelable) : QDialog(parent)
+JavaDownloadDialog::JavaDownloadDialog(QString JavaVersionRequired, QString javaDownloadURL, QString title, QWidget* parent, bool cancelable)
+    : QDialog(parent)
 {
+
+    m_windowTitle = title;
     setObjectName(QStringLiteral("JavaDownloadDialog"));
     resize(400, 347);
-    m_verticalLayout = new QVBoxLayout(this);
-    m_verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-
-    m_versionWidget = new VersionSelectWidget(parent);
-    m_verticalLayout->addWidget(m_versionWidget);
-
+       
     m_horizontalLayout = new QHBoxLayout();
     m_horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
 
-    m_refreshButton = new QPushButton(this);
-    m_refreshButton->setObjectName(QStringLiteral("refreshButton"));
-    m_horizontalLayout->addWidget(m_refreshButton);
+    m_downloadButton = new QPushButton(this);
+    m_downloadButton->setObjectName(QStringLiteral("downloadButton"));
+    m_okButton = new QPushButton(this);
+    m_okButton->setObjectName(QStringLiteral("okButton"));
+    m_horizontalLayout->addWidget(m_downloadButton);
+    m_horizontalLayout->addWidget(m_okButton);
 
-    m_buttonBox = new QDialogButtonBox(this);
-    m_buttonBox->setObjectName(QStringLiteral("buttonBox"));
-    m_buttonBox->setOrientation(Qt::Horizontal);
-    m_buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-    m_horizontalLayout->addWidget(m_buttonBox);
-
-    m_verticalLayout->addLayout(m_horizontalLayout);
-
+    
     retranslate();
-
-    connect(m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(m_versionWidget->view(), &QAbstractItemView::doubleClicked, this, &QDialog::accept);
-    connect(m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     QMetaObject::connectSlotsByName(this);
     setWindowModality(Qt::WindowModal);
-    setWindowTitle(title);
+    setWindowTitle(m_windowTitle);
 
-    m_vlist = vlist;
-
-    if (!cancelable) {
-        m_buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(false);
-    }
 }
 
 void JavaDownloadDialog::retranslate()
 {
     // FIXME: overrides custom title given in constructor!
-    setWindowTitle(tr("Choose Version"));
-    m_refreshButton->setToolTip(tr("Reloads the version list."));
-    m_refreshButton->setText(tr("&Refresh"));
+    setWindowTitle(m_windowTitle);
+    m_downloadButton->setToolTip(tr("Reloadsaa the version list."));
+    m_downloadButton->setText(tr("&Download"));
 }
 
 void JavaDownloadDialog::setCurrentVersion(const QString& version)
 {
     m_currentVersion = version;
-    m_versionWidget->setCurrentVersion(version);
-}
-
-void JavaDownloadDialog::setEmptyString(QString emptyString)
-{
-    m_versionWidget->setEmptyString(emptyString);
-}
-
-void JavaDownloadDialog::setEmptyErrorString(QString emptyErrorString)
-{
-    m_versionWidget->setEmptyErrorString(emptyErrorString);
-}
-
-void JavaDownloadDialog::setResizeOn(int column)
-{
-    resizeOnColumn = column;
 }
 
 int JavaDownloadDialog::exec()
 {
     QDialog::open();
-    m_versionWidget->initialize(m_vlist);
-    m_versionWidget->selectSearch();
-    if (resizeOnColumn != -1) {
-        m_versionWidget->setResizeOn(resizeOnColumn);
-    }
     return QDialog::exec();
 }
 
-void JavaDownloadDialog::selectRecommended()
+
+
+void JavaDownloadDialog::on_downloadButton_clicked()
 {
-    m_versionWidget->selectRecommended();
+    m_downloadButton->setText(tr("&Download asd"));
+}
+void JavaDownloadDialog::on_okButton_clicked()
+{
+    m_downloadButton->setText(tr("&Download asd"));
 }
 
-BaseVersion::Ptr JavaDownloadDialog::selectedVersion() const
-{
-    return m_versionWidget->selectedVersion();
-}
-
-void JavaDownloadDialog::on_refreshButton_clicked()
-{
-    m_versionWidget->loadList();
-}
-
-void JavaDownloadDialog::setExactFilter(BaseVersionList::ModelRoles role, QString filter)
-{
-    m_versionWidget->setExactFilter(role, filter);
-}
-
-void JavaDownloadDialog::setExactIfPresentFilter(BaseVersionList::ModelRoles role, QString filter)
-{
-    m_versionWidget->setExactIfPresentFilter(role, filter);
-}
-
-void JavaDownloadDialog::setFuzzyFilter(BaseVersionList::ModelRoles role, QString filter)
-{
-    m_versionWidget->setFuzzyFilter(role, filter);
-}

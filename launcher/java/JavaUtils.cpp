@@ -45,7 +45,6 @@
 #include "FileSystem.h"
 #include "java/JavaInstallList.h"
 #include "java/JavaUtils.h"
-
 #define IBUS "@im=ibus"
 
 JavaUtils::JavaUtils() {}
@@ -151,15 +150,7 @@ JavaInstallPtr JavaUtils::GetDefaultJava()
     return javaVersion;
 }
 
-QMap<QString, QString> JavaUtils::GetVersionToJavaVesion()
-{
-    QMap<QString, QString> data_windows;
-    data_windows["Java 8"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=8";
-    data_windows["Java 16"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=16";
-    data_windows["Java 17"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=17";
-    data_windows["Java 21"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=21";
-    return data_windows;
-}
+
 
 QStringList addJavasFromEnv(QList<QString> javas)
 {

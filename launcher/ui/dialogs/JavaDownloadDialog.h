@@ -34,7 +34,7 @@ class JavaDownloadDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit JavaDownloadDialog(BaseVersionList* vlist, QString title, QWidget* parent = 0, bool cancelable = true);
+    explicit JavaDownloadDialog(QString JavaVersionRequired, QString javaDownloadURL, QString title, QWidget* parent = 0, bool cancelable = true);
     virtual ~JavaDownloadDialog(){};
 
     int exec() override;
@@ -50,7 +50,8 @@ class JavaDownloadDialog : public QDialog {
     void setResizeOn(int column);
 
    private slots:
-    void on_refreshButton_clicked();
+    void on_downloadButton_clicked();
+    void on_okButton_clicked();
 
    private:
     void retranslate();
@@ -58,13 +59,10 @@ class JavaDownloadDialog : public QDialog {
 
    private:
     QString m_currentVersion;
-    VersionSelectWidget* m_versionWidget = nullptr;
-    QVBoxLayout* m_verticalLayout = nullptr;
+    QString m_windowTitle;
     QHBoxLayout* m_horizontalLayout = nullptr;
-    QPushButton* m_refreshButton = nullptr;
-    QDialogButtonBox* m_buttonBox = nullptr;
-
-    BaseVersionList* m_vlist = nullptr;
+    QPushButton* m_downloadButton = nullptr;
+    QPushButton* m_okButton = nullptr;
 
     int resizeOnColumn = -1;
 

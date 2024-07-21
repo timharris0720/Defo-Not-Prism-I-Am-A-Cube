@@ -424,10 +424,12 @@ set(JAVA_SOURCES
     java/JavaInstall.cpp
     java/JavaInstallList.h
     java/JavaInstallList.cpp
+    java/MinecraftJavaVersion.h
     java/JavaUtils.h
     java/JavaUtils.cpp
     java/JavaVersion.h
     java/JavaVersion.cpp
+    
 )
 
 set(TRANSLATIONS_SOURCES

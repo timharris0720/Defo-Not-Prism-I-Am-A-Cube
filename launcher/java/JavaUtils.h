@@ -36,7 +36,6 @@ class JavaUtils : public QObject {
     JavaInstallPtr MakeJavaPtr(QString path, QString id = "unknown", QString arch = "unknown");
     QList<QString> FindJavaPaths();
     JavaInstallPtr GetDefaultJava();
-    QMap<QString, QString> GetVersionToJavaVesion();
 #ifdef Q_OS_WIN
     QList<JavaInstallPtr> FindJavaFromRegistryKey(DWORD keyType, QString keyName, QString keyJavaDir, QString subkeySuffix = "");
 #endif
