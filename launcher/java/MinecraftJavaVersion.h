@@ -19,10 +19,10 @@ class MinecraftVersion_Java : public QObject {
         data_windows["Java 17"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=17";
         data_windows["Java 21"] = "https://adoptium.net/temurin/releases/?os=windows&arch=x64&package=jre&version=21";
     }
-    
+    QString GetMinecraftVersion() { return m_MinecraftVersion;}
     QString GetJavaVersionString()
     {
-        if (m_MinecraftInt <= 1165)
+        if (m_MinecraftInt > 1 && m_MinecraftInt <= 1165)
             return "Java 8";
         if (m_MinecraftInt >= 1170 && m_MinecraftInt >= 1171)
             return "Java 16";
@@ -31,7 +31,7 @@ class MinecraftVersion_Java : public QObject {
         if (m_MinecraftInt >= 1210)
             return "Java 21";
         else
-            return "we dk";
+            return "(we dk and we dk the " + m_MinecraftVersion + ")";
     }
     QString GetJavaVersionURL(QString JavaVers)
     {

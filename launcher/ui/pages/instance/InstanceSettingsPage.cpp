@@ -65,6 +65,7 @@
 InstanceSettingsPage::InstanceSettingsPage(BaseInstance* inst, QWidget* parent)
     : QWidget(parent), ui(new Ui::InstanceSettingsPage), m_instance(inst)
 {
+    
     m_settings = inst->settings();
     ui->setupUi(this);
 
@@ -419,22 +420,17 @@ void InstanceSettingsPage::on_javaDownloadBtn_clicked()
         JavaCommon::javaCheckNotFound(this);
         return;
     }
-
-    JavaInstallPtr java;
-    QString instanceID = APPLICATION->m_instanceIdToLaunch;
-    auto instanceRoot = FS::PathCombine(APPLICATION->instances()->GetInstanceDirectory(), instanceID);
-    auto instanceSettings = std::make_shared<INISettingsObject>(FS::PathCombine(instanceRoot, "instance.cfg"));
-    InstancePtr inst;
-
-    instanceSettings->registerSetting("InstanceType", "");
-
-    QString inst_type = instanceSettings->get("InstanceType").toString();
+    QString instanceID = m_instance->id();
+    InstancePtr inst = APPLICATION->instances()->getInstanceById(instanceID);
+    
     ////profile->getMinecraftVersion()
-    auto mcInst = new MinecraftInstance(APPLICATION->instances()->GetGlobalSettings(), instanceSettings, instanceRoot);
+    
+    auto mcInst = new MinecraftInstance(APPLICATION->instances()->GetGlobalSettings(), inst->settings(), inst->instanceRoot());
     auto mcVersion = mcInst->getMinecraftVersion();
     MinecraftVersion_Java version(mcVersion);
     QString versionRequired = version.GetJavaVersionString();
-    JavaDownloadDialog downloadDialog(versionRequired, version.GetJavaVersionURL(versionRequired), tr("Download Java Version"), this, true);
+    JavaDownloadDialog downloadDialog(mcVersion, versionRequired, version.GetJavaVersionURL(versionRequired), tr("Download Java Version"),
+                                      this, true);
     downloadDialog.exec();
 }
 

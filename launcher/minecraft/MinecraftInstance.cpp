@@ -230,9 +230,16 @@ std::shared_ptr<PackProfile> MinecraftInstance::getPackProfile() const
 {
     return m_components;
 }
-QString MinecraftInstance::getMinecraftVersion() const
+QString MinecraftInstance::getMinecraftVersion()
 {
-    return m_components->getProfile()->getMinecraftVersion();
+    QString mcVersion = m_components->getComponentVersion("net.minecraft");
+    if (mcVersion.isEmpty()) {
+        // Load component info if needed
+        m_components->reload(Net::Mode::Offline);
+        mcVersion = m_components->getComponentVersion("net.minecraft");
+    }
+    qDebug() << "Minecraft version in MinecraftInstance::getMinecraftVersion() is:" << mcVersion ;
+    return mcVersion;
 }
 
 QSet<QString> MinecraftInstance::traits() const

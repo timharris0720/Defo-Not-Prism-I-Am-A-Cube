@@ -69,7 +69,6 @@ VersionSelectDialog::VersionSelectDialog(BaseVersionList* vlist, QString title, 
     m_buttonBox->setOrientation(Qt::Horizontal);
     m_buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
     m_horizontalLayout->addWidget(m_buttonBox);
-
     m_verticalLayout->addLayout(m_horizontalLayout);
 
     retranslate();

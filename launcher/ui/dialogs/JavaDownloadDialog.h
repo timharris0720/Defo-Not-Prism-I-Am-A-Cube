@@ -17,7 +17,7 @@
 
 #include <QDialog>
 #include <QSortFilterProxyModel>
-
+#include <QLabel>
 #include "BaseVersionList.h"
 
 class QVBoxLayout;
@@ -34,7 +34,12 @@ class JavaDownloadDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit JavaDownloadDialog(QString JavaVersionRequired, QString javaDownloadURL, QString title, QWidget* parent = 0, bool cancelable = true);
+    explicit JavaDownloadDialog(QString mcVersion,
+                                QString JavaVersionRequired,
+                                QString javaDownloadURL,
+                                QString title,
+                                QWidget* parent = 0,
+                                bool cancelable = true);
     virtual ~JavaDownloadDialog(){};
 
     int exec() override;
@@ -51,7 +56,6 @@ class JavaDownloadDialog : public QDialog {
 
    private slots:
     void on_downloadButton_clicked();
-    void on_okButton_clicked();
 
    private:
     void retranslate();
@@ -59,11 +63,13 @@ class JavaDownloadDialog : public QDialog {
 
    private:
     QString m_currentVersion;
+    QString m_DownloadURL;
     QString m_windowTitle;
     QHBoxLayout* m_horizontalLayout = nullptr;
+    QVBoxLayout* m_verticalLayout = nullptr;
     QPushButton* m_downloadButton = nullptr;
-    QPushButton* m_okButton = nullptr;
-
+    QDialogButtonBox* m_buttonBox = nullptr;
+    QLabel* m_TextLabel = nullptr; 
     int resizeOnColumn = -1;
 
     Task* loadTask = nullptr;
