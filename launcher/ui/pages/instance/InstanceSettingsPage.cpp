@@ -416,22 +416,37 @@ void InstanceSettingsPage::on_javaDetectBtn_clicked()
 
 void InstanceSettingsPage::on_javaDownloadBtn_clicked()
 {
-    if (JavaUtils::getJavaCheckPath().isEmpty()) {
-        JavaCommon::javaCheckNotFound(this);
-        return;
-    }
     QString instanceID = m_instance->id();
     InstancePtr inst = APPLICATION->instances()->getInstanceById(instanceID);
-    
+    //APPLICATION->applicationDirPath
     ////profile->getMinecraftVersion()
     
     auto mcInst = new MinecraftInstance(APPLICATION->instances()->GetGlobalSettings(), inst->settings(), inst->instanceRoot());
     auto mcVersion = mcInst->getMinecraftVersion();
     MinecraftVersion_Java version(mcVersion);
-    QString versionRequired = version.GetJavaVersionString();
-    JavaDownloadDialog downloadDialog(mcVersion, versionRequired, version.GetJavaVersionURL(versionRequired), tr("Download Java Version"),
-                                      this, true);
+    JavaDownloadDialog downloadDialog(mcVersion, version.GetJavaVersionString(), version.GetJavaVersionURL(version.GetJavaVersionString()),
+                                      tr("Download Java Version"),this, true);
     downloadDialog.exec();
+    if (downloadDialog.result() == QDialog::Accepted) {
+        qDebug() << "Java Version: " << downloadDialog.getJavaInstallLocation();
+        QString raw_path = downloadDialog.getJavaInstallLocation();
+        if (raw_path.isEmpty()) {
+            return;
+        }
+        QString cooked_path = FS::NormalizePath(raw_path);
+
+        QFileInfo javaInfo(raw_path);
+        
+        ui->javaPathTextBox->setText(raw_path);
+        qDebug() << "javaPath is now: " << raw_path;
+        // custom Java could be anything... enable perm gen option
+        ui->permGenSpinBox->setVisible(true);
+        ui->labelPermGen->setVisible(true);
+        ui->labelPermgenNote->setVisible(true);
+        m_settings->set("PermGenVisible", true);
+        qDebug() << "javaPath is now: " << raw_path;
+    }
+    
 }
 
 void InstanceSettingsPage::on_javaBrowseBtn_clicked()
