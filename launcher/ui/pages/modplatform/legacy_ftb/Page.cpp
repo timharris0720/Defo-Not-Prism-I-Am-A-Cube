@@ -213,7 +213,7 @@ void Page::ftbPackDataDownloadAborted()
     CustomMessageBox::selectable(this, tr("Task aborted"), tr("The task has been aborted by the user."), QMessageBox::Information)->show();
 }
 
-void Page::ftbPrivatePackDataDownloadSuccessfully(Modpack pack)
+void Page::ftbPrivatePackDataDownloadSuccessfully(const Modpack& pack)
 {
     privateListModel->addPack(pack);
 }
@@ -369,4 +369,13 @@ void Page::triggerSearch()
     currentModel->setSearchTerm(ui->searchEdit->text());
 }
 
+void Page::setSearchTerm(QString term)
+{
+    ui->searchEdit->setText(term);
+}
+
+QString Page::getSerachTerm() const
+{
+    return ui->searchEdit->text();
+}
 }  // namespace LegacyFTB

@@ -35,25 +35,17 @@
 
 #pragma once
 
-#include <QWidget>
-
-#include <QObjectPtr.h>
-#include <QMenu>
 #include "Application.h"
 #include "BaseInstance.h"
-#include "JavaCommon.h"
-#include "java/JavaChecker.h"
 #include "ui/pages/BasePage.h"
+#include "ui/widgets/MinecraftSettingsWidget.h"
+#include <QWidget>
 
-class JavaChecker;
-namespace Ui {
-class InstanceSettingsPage;
-}
-
-class InstanceSettingsPage : public QWidget, public BasePage {
+class InstanceSettingsPage : public MinecraftSettingsWidget, public BasePage {
     Q_OBJECT
 
    public:
+<<<<<<< HEAD
     explicit InstanceSettingsPage(BaseInstance* inst, QWidget* parent = 0);
     virtual ~InstanceSettingsPage();
     virtual QString displayName() const override { return tr("Settings"); }
@@ -91,4 +83,21 @@ class InstanceSettingsPage : public QWidget, public BasePage {
     BaseInstance* m_instance;
     SettingsObjectPtr m_settings;
     unique_qobject_ptr<JavaCommon::TestCheck> checker;
+=======
+    explicit InstanceSettingsPage(MinecraftInstancePtr instance, QWidget* parent = nullptr) : MinecraftSettingsWidget(std::move(instance), parent)
+    {
+        connect(APPLICATION, &Application::globalSettingsAboutToOpen, this, &InstanceSettingsPage::saveSettings);
+        connect(APPLICATION, &Application::globalSettingsClosed, this, &InstanceSettingsPage::loadSettings);
+    }
+    ~InstanceSettingsPage() override {}
+    QString displayName() const override { return tr("Settings"); }
+    QIcon icon() const override { return APPLICATION->getThemedIcon("instance-settings"); }
+    QString id() const override { return "settings"; }
+    bool apply() override
+    {
+        saveSettings();
+        return true;
+    }
+    QString helpPage() const override { return "Instance-settings"; }
+>>>>>>> 1c0c24763174fe57cfeb6d1855505b7d6e9946e4
 };

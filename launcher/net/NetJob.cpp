@@ -36,6 +36,7 @@
  */
 
 #include "NetJob.h"
+#include <QNetworkReply>
 #include "net/NetRequest.h"
 #include "tasks/ConcurrentTask.h"
 #if defined(LAUNCHER_APPLICATION)
@@ -44,10 +45,10 @@
 #endif
 
 NetJob::NetJob(QString job_name, shared_qobject_ptr<QNetworkAccessManager> network, int max_concurrent)
-    : ConcurrentTask(nullptr, job_name), m_network(network)
+    : ConcurrentTask(job_name), m_network(network)
 {
 #if defined(LAUNCHER_APPLICATION)
-    if (max_concurrent < 0)
+    if (APPLICATION_DYN && max_concurrent < 0)
         max_concurrent = APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt();
 #endif
     if (max_concurrent > 0)
@@ -145,10 +146,24 @@ void NetJob::updateState()
                   .arg(QString::number(m_doing.count()), QString::number(m_done.count()), QString::number(totalSize())));
 }
 
+bool NetJob::isOnline()
+{
+    // check some errors that are ussually associated with the lack of internet
+    for (auto job : getFailedActions()) {
+        auto err = job->error();
+        if (err != QNetworkReply::HostNotFoundError && err != QNetworkReply::NetworkSessionFailedError) {
+            return true;
+        }
+    }
+    return false;
+};
+
 void NetJob::emitFailed(QString reason)
 {
 #if defined(LAUNCHER_APPLICATION)
-    if (m_ask_retry) {
+
+    if (APPLICATION_DYN && m_ask_retry && m_manual_try < APPLICATION->settings()->get("NumberOfManualRetries").toInt() && isOnline()) {
+        m_manual_try++;
         auto response = CustomMessageBox::selectable(nullptr, "Confirm retry",
                                                      "The tasks failed.\n"
                                                      "Failed urls\n" +

@@ -24,10 +24,13 @@ set(CORE_SOURCES
     NullInstance.h
     MMCZip.h
     MMCZip.cpp
+    Untar.h
+    Untar.cpp
     StringUtils.h
     StringUtils.cpp
     QVariantUtils.h
     RuntimeContext.h
+    PSaveFile.h
 
     # Basic instance manipulation tasks (derived from InstanceTask)
     InstanceCreationTask.h
@@ -138,7 +141,6 @@ set(NET_SOURCES
     net/HeaderProxy.h
     net/RawHeaderProxy.h
     net/ApiHeaderProxy.h
-    net/StaticHeaderProxy.h
     net/ApiDownload.h
     net/ApiDownload.cpp
     net/ApiUpload.cpp
@@ -159,8 +161,6 @@ set(LAUNCH_SOURCES
     launch/steps/PreLaunchCommand.h
     launch/steps/TextPrint.cpp
     launch/steps/TextPrint.h
-    launch/steps/Update.cpp
-    launch/steps/Update.h
     launch/steps/QuitAfterGameStop.cpp
     launch/steps/QuitAfterGameStop.h
     launch/steps/PrintServers.cpp
@@ -171,6 +171,8 @@ set(LAUNCH_SOURCES
     launch/LaunchTask.h
     launch/LogModel.cpp
     launch/LogModel.h
+    launch/TaskStepWrapper.cpp
+    launch/TaskStepWrapper.h
 )
 
 # Old update system
@@ -206,6 +208,11 @@ set(ICONS_SOURCES
 
 # Support for Minecraft instances and launch
 set(MINECRAFT_SOURCES
+
+    # Logging
+    minecraft/Logging.h
+    minecraft/Logging.cpp
+
     # Minecraft support
     minecraft/auth/AccountData.cpp
     minecraft/auth/AccountData.h
@@ -263,8 +270,8 @@ set(MINECRAFT_SOURCES
     minecraft/launch/ExtractNatives.h
     minecraft/launch/LauncherPartLaunch.cpp
     minecraft/launch/LauncherPartLaunch.h
-    minecraft/launch/MinecraftServerTarget.cpp
-    minecraft/launch/MinecraftServerTarget.h
+    minecraft/launch/MinecraftTarget.cpp
+    minecraft/launch/MinecraftTarget.h
     minecraft/launch/PrintInstanceInfo.cpp
     minecraft/launch/PrintInstanceInfo.h
     minecraft/launch/ReconstructAssets.cpp
@@ -273,6 +280,8 @@ set(MINECRAFT_SOURCES
     minecraft/launch/ScanModFolders.h
     minecraft/launch/VerifyJavaInstall.cpp
     minecraft/launch/VerifyJavaInstall.h
+    minecraft/launch/AutoInstallJava.cpp
+    minecraft/launch/AutoInstallJava.h
 
     minecraft/GradleSpecifier.h
     minecraft/MinecraftInstance.cpp
@@ -287,8 +296,6 @@ set(MINECRAFT_SOURCES
     minecraft/ComponentUpdateTask.h
     minecraft/MinecraftLoadAndCheck.h
     minecraft/MinecraftLoadAndCheck.cpp
-    minecraft/MinecraftUpdate.h
-    minecraft/MinecraftUpdate.cpp
     minecraft/MojangVersionFormat.cpp
     minecraft/MojangVersionFormat.h
     minecraft/Rule.cpp
@@ -338,13 +345,12 @@ set(MINECRAFT_SOURCES
     minecraft/mod/TexturePackFolderModel.h
     minecraft/mod/TexturePackFolderModel.cpp
     minecraft/mod/ShaderPackFolderModel.h
-    minecraft/mod/tasks/BasicFolderLoadTask.h
-    minecraft/mod/tasks/ModFolderLoadTask.h
-    minecraft/mod/tasks/ModFolderLoadTask.cpp
+    minecraft/mod/tasks/ResourceFolderLoadTask.h
+    minecraft/mod/tasks/ResourceFolderLoadTask.cpp
     minecraft/mod/tasks/LocalModParseTask.h
     minecraft/mod/tasks/LocalModParseTask.cpp
-    minecraft/mod/tasks/LocalModUpdateTask.h
-    minecraft/mod/tasks/LocalModUpdateTask.cpp
+    minecraft/mod/tasks/LocalResourceUpdateTask.h
+    minecraft/mod/tasks/LocalResourceUpdateTask.cpp
     minecraft/mod/tasks/LocalDataPackParseTask.h
     minecraft/mod/tasks/LocalDataPackParseTask.cpp
     minecraft/mod/tasks/LocalResourcePackParseTask.h
@@ -418,8 +424,6 @@ set(SETTINGS_SOURCES
 set(JAVA_SOURCES
     java/JavaChecker.h
     java/JavaChecker.cpp
-    java/JavaCheckerJob.h
-    java/JavaCheckerJob.cpp
     java/JavaInstall.h
     java/JavaInstall.cpp
     java/JavaInstallList.h
@@ -429,7 +433,24 @@ set(JAVA_SOURCES
     java/JavaUtils.cpp
     java/JavaVersion.h
     java/JavaVersion.cpp
+<<<<<<< HEAD
     
+=======
+
+    java/JavaMetadata.h
+    java/JavaMetadata.cpp
+    java/download/ArchiveDownloadTask.cpp
+    java/download/ArchiveDownloadTask.h
+    java/download/ManifestDownloadTask.cpp
+    java/download/ManifestDownloadTask.h
+    java/download/SymlinkTask.cpp
+    java/download/SymlinkTask.h
+
+    ui/java/InstallJavaDialog.h
+    ui/java/InstallJavaDialog.cpp
+    ui/java/VersionList.h
+    ui/java/VersionList.cpp
+>>>>>>> 1c0c24763174fe57cfeb6d1855505b7d6e9946e4
 )
 
 set(TRANSLATIONS_SOURCES
@@ -592,7 +613,7 @@ set(PRISMUPDATER_SOURCES
     updater/prismupdater/UpdaterDialogs.cpp
     updater/prismupdater/GitHubRelease.h
     updater/prismupdater/GitHubRelease.cpp
-   
+
     Json.h
     Json.cpp
     FileSystem.h
@@ -609,7 +630,7 @@ set(PRISMUPDATER_SOURCES
     # Zip
     MMCZip.h
     MMCZip.cpp
-    
+
     # Time
     MMCTime.h
     MMCTime.cpp
@@ -653,6 +674,22 @@ ecm_qt_declare_logging_category(CORE_SOURCES
 )
 
 ecm_qt_export_logging_category(
+    IDENTIFIER instanceProfileC
+    CATEGORY_NAME "launcher.instance.profile"
+    DEFAULT_SEVERITY Debug
+    DESCRIPTION "Profile actions"
+    EXPORT "${Launcher_Name}"
+)
+
+ecm_qt_export_logging_category(
+    IDENTIFIER instanceProfileResolveC
+    CATEGORY_NAME "launcher.instance.profile.resolve"
+    DEFAULT_SEVERITY Debug
+    DESCRIPTION "Profile component resolusion actions"
+    EXPORT "${Launcher_Name}"
+)
+
+ecm_qt_export_logging_category(
     IDENTIFIER taskLogC
     CATEGORY_NAME "launcher.task"
     DEFAULT_SEVERITY Debug
@@ -664,7 +701,7 @@ ecm_qt_export_logging_category(
     IDENTIFIER taskNetLogC
     CATEGORY_NAME "launcher.task.net"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network action"
+    DESCRIPTION "Task network action"
     EXPORT "${Launcher_Name}"
 )
 
@@ -672,14 +709,14 @@ ecm_qt_export_logging_category(
     IDENTIFIER taskDownloadLogC
     CATEGORY_NAME "launcher.task.net.download"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network download actions"
+    DESCRIPTION "Task network download actions"
     EXPORT "${Launcher_Name}"
 )
 ecm_qt_export_logging_category(
     IDENTIFIER taskUploadLogC
     CATEGORY_NAME "launcher.task.net.upload"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network upload actions"
+    DESCRIPTION "Task network upload actions"
     EXPORT "${Launcher_Name}"
 )
 
@@ -749,6 +786,8 @@ SET(LAUNCHER_SOURCES
     DataMigrationTask.cpp
     ApplicationMessage.h
     ApplicationMessage.cpp
+    SysInfo.h
+    SysInfo.cpp
 
     # GUI - general utilities
     DesktopServices.h
@@ -776,7 +815,8 @@ SET(LAUNCHER_SOURCES
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
     resources/documents/documents.qrc
-    ../${Launcher_Branding_LogoQRC}
+    resources/shaders/shaders.qrc
+    "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
 
     # Icons
     icons/MMCIcon.h
@@ -787,8 +827,6 @@ SET(LAUNCHER_SOURCES
     # GUI - windows
     ui/GuiUtil.h
     ui/GuiUtil.cpp
-    ui/ColorCache.h
-    ui/ColorCache.cpp
     ui/MainWindow.h
     ui/MainWindow.cpp
     ui/InstanceWindow.h
@@ -812,6 +850,10 @@ SET(LAUNCHER_SOURCES
     ui/setupwizard/PasteWizardPage.h
     ui/setupwizard/ThemeWizardPage.cpp
     ui/setupwizard/ThemeWizardPage.h
+    ui/setupwizard/AutoJavaWizardPage.cpp
+    ui/setupwizard/AutoJavaWizardPage.h
+    ui/setupwizard/LoginWizardPage.cpp
+    ui/setupwizard/LoginWizardPage.h
 
     # GUI - themes
     ui/themes/FusionTheme.cpp
@@ -872,7 +914,6 @@ SET(LAUNCHER_SOURCES
     ui/pages/instance/NotesPage.h
     ui/pages/instance/LogPage.cpp
     ui/pages/instance/LogPage.h
-    ui/pages/instance/InstanceSettingsPage.cpp
     ui/pages/instance/InstanceSettingsPage.h
     ui/pages/instance/ScreenshotsPage.cpp
     ui/pages/instance/ScreenshotsPage.h
@@ -882,21 +923,22 @@ SET(LAUNCHER_SOURCES
     ui/pages/instance/ServersPage.h
     ui/pages/instance/WorldListPage.cpp
     ui/pages/instance/WorldListPage.h
-
+    ui/pages/instance/McClient.cpp
+    ui/pages/instance/McClient.h
+    ui/pages/instance/McResolver.cpp
+    ui/pages/instance/McResolver.h
+    ui/pages/instance/ServerPingTask.cpp
+    ui/pages/instance/ServerPingTask.h
+    
     # GUI - global settings pages
     ui/pages/global/AccountListPage.cpp
     ui/pages/global/AccountListPage.h
-    ui/pages/global/CustomCommandsPage.cpp
-    ui/pages/global/CustomCommandsPage.h
-    ui/pages/global/EnvironmentVariablesPage.cpp
-    ui/pages/global/EnvironmentVariablesPage.h
     ui/pages/global/ExternalToolsPage.cpp
     ui/pages/global/ExternalToolsPage.h
     ui/pages/global/JavaPage.cpp
     ui/pages/global/JavaPage.h
     ui/pages/global/LanguagePage.cpp
     ui/pages/global/LanguagePage.h
-    ui/pages/global/MinecraftPage.cpp
     ui/pages/global/MinecraftPage.h
     ui/pages/global/LauncherPage.cpp
     ui/pages/global/LauncherPage.h
@@ -928,6 +970,9 @@ SET(LAUNCHER_SOURCES
 
     ui/pages/modplatform/ShaderPackPage.cpp
     ui/pages/modplatform/ShaderPackModel.cpp
+
+
+    ui/pages/modplatform/ModpackProviderBasePage.h
 
     ui/pages/modplatform/atlauncher/AtlFilterModel.cpp
     ui/pages/modplatform/atlauncher/AtlFilterModel.h
@@ -991,8 +1036,6 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/CopyInstanceDialog.h
     ui/dialogs/CustomMessageBox.cpp
     ui/dialogs/CustomMessageBox.h
-    ui/dialogs/EditAccountDialog.cpp
-    ui/dialogs/EditAccountDialog.h
     ui/dialogs/ExportInstanceDialog.cpp
     ui/dialogs/ExportInstanceDialog.h
     ui/dialogs/ExportPackDialog.cpp
@@ -1031,13 +1074,20 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/BlockedModsDialog.h
     ui/dialogs/ChooseProviderDialog.h
     ui/dialogs/ChooseProviderDialog.cpp
-    ui/dialogs/ModUpdateDialog.cpp
-    ui/dialogs/ModUpdateDialog.h
+    ui/dialogs/ResourceUpdateDialog.cpp
+    ui/dialogs/ResourceUpdateDialog.h
     ui/dialogs/InstallLoaderDialog.cpp
     ui/dialogs/InstallLoaderDialog.h
 
     ui/dialogs/skins/SkinManageDialog.cpp
     ui/dialogs/skins/SkinManageDialog.h
+
+    ui/dialogs/skins/draw/SkinOpenGLWindow.h
+    ui/dialogs/skins/draw/SkinOpenGLWindow.cpp
+    ui/dialogs/skins/draw/Scene.h
+    ui/dialogs/skins/draw/Scene.cpp
+    ui/dialogs/skins/draw/BoxGeometry.h
+    ui/dialogs/skins/draw/BoxGeometry.cpp
 
     # GUI - widgets
     ui/widgets/CheckComboBox.cpp
@@ -1048,14 +1098,12 @@ SET(LAUNCHER_SOURCES
     ui/widgets/CustomCommands.h
     ui/widgets/EnvironmentVariables.cpp
     ui/widgets/EnvironmentVariables.h
-    ui/widgets/DropLabel.cpp
-    ui/widgets/DropLabel.h
     ui/widgets/FocusLineEdit.cpp
     ui/widgets/FocusLineEdit.h
     ui/widgets/IconLabel.cpp
     ui/widgets/IconLabel.h
-    ui/widgets/JavaSettingsWidget.cpp
-    ui/widgets/JavaSettingsWidget.h
+    ui/widgets/JavaWizardWidget.cpp
+    ui/widgets/JavaWizardWidget.h
     ui/widgets/LabeledToolButton.cpp
     ui/widgets/LabeledToolButton.h
     ui/widgets/LanguageSelectionWidget.cpp
@@ -1091,6 +1139,10 @@ SET(LAUNCHER_SOURCES
     ui/widgets/WideBar.cpp
     ui/widgets/ThemeCustomizationWidget.h
     ui/widgets/ThemeCustomizationWidget.cpp
+    ui/widgets/MinecraftSettingsWidget.h
+    ui/widgets/MinecraftSettingsWidget.cpp
+    ui/widgets/JavaSettingsWidget.h
+    ui/widgets/JavaSettingsWidget.cpp
 
     # GUI - instance group view
     ui/instanceview/InstanceProxyModel.cpp
@@ -1126,13 +1178,14 @@ endif()
 qt_wrap_ui(LAUNCHER_UI
     ui/MainWindow.ui
     ui/setupwizard/PasteWizardPage.ui
+    ui/setupwizard/AutoJavaWizardPage.ui
+    ui/setupwizard/LoginWizardPage.ui
     ui/setupwizard/ThemeWizardPage.ui
     ui/pages/global/AccountListPage.ui
     ui/pages/global/JavaPage.ui
     ui/pages/global/LauncherPage.ui
     ui/pages/global/APIPage.ui
     ui/pages/global/ProxyPage.ui
-    ui/pages/global/MinecraftPage.ui
     ui/pages/global/ExternalToolsPage.ui
     ui/pages/instance/ExternalResourcesPage.ui
     ui/pages/instance/NotesPage.ui
@@ -1140,7 +1193,6 @@ qt_wrap_ui(LAUNCHER_UI
     ui/pages/instance/ServersPage.ui
     ui/pages/instance/GameOptionsPage.ui
     ui/pages/instance/OtherLogsPage.ui
-    ui/pages/instance/InstanceSettingsPage.ui
     ui/pages/instance/VersionPage.ui
     ui/pages/instance/ManagedPackPage.ui
     ui/pages/instance/WorldListPage.ui
@@ -1163,6 +1215,8 @@ qt_wrap_ui(LAUNCHER_UI
     ui/widgets/ModFilterWidget.ui
     ui/widgets/SubTaskProgressBar.ui
     ui/widgets/ThemeCustomizationWidget.ui
+    ui/widgets/MinecraftSettingsWidget.ui
+    ui/widgets/JavaSettingsWidget.ui
     ui/dialogs/CopyInstanceDialog.ui
     ui/dialogs/ProfileSetupDialog.ui
     ui/dialogs/ProgressDialog.ui
@@ -1178,12 +1232,10 @@ qt_wrap_ui(LAUNCHER_UI
     ui/dialogs/MSALoginDialog.ui
     ui/dialogs/OfflineLoginDialog.ui
     ui/dialogs/AboutDialog.ui
-    ui/dialogs/EditAccountDialog.ui
     ui/dialogs/ReviewMessageBox.ui
     ui/dialogs/ScrollMessageBox.ui
     ui/dialogs/BlockedModsDialog.ui
     ui/dialogs/ChooseProviderDialog.ui
-
     ui/dialogs/skins/SkinManageDialog.ui
 )
 
@@ -1208,7 +1260,8 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/iOS/iOS.qrc
     resources/flat/flat.qrc
     resources/documents/documents.qrc
-    ../${Launcher_Branding_LogoQRC}
+    resources/shaders/shaders.qrc
+    "${CMAKE_CURRENT_BINARY_DIR}/../${Launcher_Branding_LogoQRC}"
 )
 
 qt_wrap_ui(PRISMUPDATER_UI
@@ -1226,14 +1279,10 @@ include(CompilerWarnings)
 
 # Add executable
 add_library(Launcher_logic STATIC ${LOGIC_SOURCES} ${LAUNCHER_SOURCES} ${LAUNCHER_UI} ${LAUNCHER_RESOURCES})
-if(BUILD_TESTING)
-target_compile_definitions(Launcher_logic PUBLIC LAUNCHER_TEST)
-endif()
 set_project_warnings(Launcher_logic
     "${Launcher_MSVC_WARNINGS}"
     "${Launcher_CLANG_WARNINGS}"
     "${Launcher_GCC_WARNINGS}")
-target_compile_definitions(Launcher_logic PUBLIC LAUNCHER_APPLICATION)
 target_include_directories(Launcher_logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(Launcher_logic PUBLIC LAUNCHER_APPLICATION)
 target_link_libraries(Launcher_logic
@@ -1262,6 +1311,8 @@ target_link_libraries(Launcher_logic
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::NetworkAuth
+    Qt${QT_VERSION_MAJOR}::OpenGL
+    ${Launcher_QT_DBUS}
     ${Launcher_QT_LIBS}
 )
 target_link_libraries(Launcher_logic
@@ -1270,6 +1321,10 @@ target_link_libraries(Launcher_logic
     LocalPeer
     Launcher_rainbow
 )
+if (TARGET ${Launcher_QT_DBUS})
+    add_compile_definitions(WITH_QTDBUS)
+endif()
+
 if(APPLE)
     set(CMAKE_MACOSX_RPATH 1)
     set(CMAKE_INSTALL_RPATH "@loader_path/../Frameworks/")
@@ -1337,7 +1392,7 @@ if(Launcher_BUILD_UPDATER)
     add_executable("${Launcher_Name}_updater" WIN32 updater/prismupdater/updater_main.cpp)
     target_sources("${Launcher_Name}_updater" PRIVATE updater/prismupdater/updater.exe.manifest)
     target_link_libraries("${Launcher_Name}_updater" prism_updater_logic)
-    
+
     if(DEFINED Launcher_APP_BINARY_NAME)
         set_target_properties("${Launcher_Name}_updater" PROPERTIES OUTPUT_NAME "${Launcher_APP_BINARY_NAME}_updater")
     endif()

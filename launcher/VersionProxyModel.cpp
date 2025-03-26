@@ -114,10 +114,14 @@ QVariant VersionProxyModel::headerData(int section, Qt::Orientation orientation,
                 return tr("Branch");
             case Type:
                 return tr("Type");
-            case Architecture:
+            case CPUArchitecture:
                 return tr("Architecture");
             case Path:
                 return tr("Path");
+            case JavaName:
+                return tr("Java Name");
+            case JavaMajor:
+                return tr("Major Version");
             case Time:
                 return tr("Released");
         }
@@ -131,10 +135,14 @@ QVariant VersionProxyModel::headerData(int section, Qt::Orientation orientation,
                 return tr("The version's branch");
             case Type:
                 return tr("The version's type");
-            case Architecture:
+            case CPUArchitecture:
                 return tr("CPU Architecture");
             case Path:
                 return tr("Filesystem path to this version");
+            case JavaName:
+                return tr("The alternative name of the Java version");
+            case JavaMajor:
+                return tr("The Java major version");
             case Time:
                 return tr("Release date of this version");
         }
@@ -165,10 +173,14 @@ QVariant VersionProxyModel::data(const QModelIndex& index, int role) const
                     return sourceModel()->data(parentIndex, BaseVersionList::BranchRole);
                 case Type:
                     return sourceModel()->data(parentIndex, BaseVersionList::TypeRole);
-                case Architecture:
-                    return sourceModel()->data(parentIndex, BaseVersionList::ArchitectureRole);
+                case CPUArchitecture:
+                    return sourceModel()->data(parentIndex, BaseVersionList::CPUArchitectureRole);
                 case Path:
                     return sourceModel()->data(parentIndex, BaseVersionList::PathRole);
+                case JavaName:
+                    return sourceModel()->data(parentIndex, BaseVersionList::JavaNameRole);
+                case JavaMajor:
+                    return sourceModel()->data(parentIndex, BaseVersionList::JavaMajorRole);
                 case Time:
                     return sourceModel()->data(parentIndex, Meta::VersionList::TimeRole).toDate();
                 default:
@@ -181,8 +193,8 @@ QVariant VersionProxyModel::data(const QModelIndex& index, int role) const
                 if (value.toBool()) {
                     return tr("Recommended");
                 } else if (hasLatest) {
-                    auto value = sourceModel()->data(parentIndex, BaseVersionList::LatestRole);
-                    if (value.toBool()) {
+                    auto latest = sourceModel()->data(parentIndex, BaseVersionList::LatestRole);
+                    if (latest.toBool()) {
                         return tr("Latest");
                     }
                 }
@@ -191,33 +203,27 @@ QVariant VersionProxyModel::data(const QModelIndex& index, int role) const
             }
         }
         case Qt::DecorationRole: {
-            switch (column) {
-                case Name: {
-                    if (hasRecommended) {
-                        auto recommenced = sourceModel()->data(parentIndex, BaseVersionList::RecommendedRole);
-                        if (recommenced.toBool()) {
-                            return APPLICATION->getThemedIcon("star");
-                        } else if (hasLatest) {
-                            auto latest = sourceModel()->data(parentIndex, BaseVersionList::LatestRole);
-                            if (latest.toBool()) {
-                                return APPLICATION->getThemedIcon("bug");
-                            }
-                        }
-                        QPixmap pixmap;
-                        QPixmapCache::find("placeholder", &pixmap);
-                        if (!pixmap) {
-                            QPixmap px(16, 16);
-                            px.fill(Qt::transparent);
-                            QPixmapCache::insert("placeholder", px);
-                            return px;
-                        }
-                        return pixmap;
+            if (column == Name && hasRecommended) {
+                auto recommenced = sourceModel()->data(parentIndex, BaseVersionList::RecommendedRole);
+                if (recommenced.toBool()) {
+                    return APPLICATION->getThemedIcon("star");
+                } else if (hasLatest) {
+                    auto latest = sourceModel()->data(parentIndex, BaseVersionList::LatestRole);
+                    if (latest.toBool()) {
+                        return APPLICATION->getThemedIcon("bug");
                     }
                 }
-                default: {
-                    return QVariant();
+                QPixmap pixmap;
+                QPixmapCache::find("placeholder", &pixmap);
+                if (!pixmap) {
+                    QPixmap px(16, 16);
+                    px.fill(Qt::transparent);
+                    QPixmapCache::insert("placeholder", px);
+                    return px;
                 }
+                return pixmap;
             }
+            return QVariant();
         }
         default: {
             if (roles.contains((BaseVersionList::ModelRoles)role)) {
@@ -295,6 +301,7 @@ void VersionProxyModel::setSourceModel(QAbstractItemModel* replacingRaw)
     if (!replacing) {
         roles.clear();
         filterModel->setSourceModel(replacing);
+        endResetModel();
         return;
     }
 
@@ -308,11 +315,17 @@ void VersionProxyModel::setSourceModel(QAbstractItemModel* replacingRaw)
         m_columns.push_back(ParentVersion);
     }
     */
-    if (roles.contains(BaseVersionList::ArchitectureRole)) {
-        m_columns.push_back(Architecture);
+    if (roles.contains(BaseVersionList::CPUArchitectureRole)) {
+        m_columns.push_back(CPUArchitecture);
     }
     if (roles.contains(BaseVersionList::PathRole)) {
         m_columns.push_back(Path);
+    }
+    if (roles.contains(BaseVersionList::JavaNameRole)) {
+        m_columns.push_back(JavaName);
+    }
+    if (roles.contains(BaseVersionList::JavaMajorRole)) {
+        m_columns.push_back(JavaMajor);
     }
     if (roles.contains(Meta::VersionList::TimeRole)) {
         m_columns.push_back(Time);

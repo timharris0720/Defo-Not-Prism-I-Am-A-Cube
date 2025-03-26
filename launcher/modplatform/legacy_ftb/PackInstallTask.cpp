@@ -52,7 +52,7 @@
 
 namespace LegacyFTB {
 
-PackInstallTask::PackInstallTask(shared_qobject_ptr<QNetworkAccessManager> network, Modpack pack, QString version)
+PackInstallTask::PackInstallTask(shared_qobject_ptr<QNetworkAccessManager> network, const Modpack& pack, QString version)
 {
     m_pack = pack;
     m_version = version;
@@ -138,7 +138,7 @@ void PackInstallTask::install()
     if (unzipMcDir.exists()) {
         // ok, found minecraft dir, move contents to instance dir
         if (!FS::move(m_stagingPath + "/unzip/minecraft", m_stagingPath + "/minecraft")) {
-            emitFailed(tr("Failed to move unzipped Minecraft!"));
+            emitFailed(tr("Failed to move unpacked Minecraft!"));
             return;
         }
     }
